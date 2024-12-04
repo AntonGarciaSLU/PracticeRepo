@@ -1,0 +1,40 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: npm install # Adjust for your project, e.g., `pip install -r requirements.txt`
+      - name: Build Application
+        run: npm run build # Replace with your build command
+
+      - name: Run Linter
+        run: npm run lint # Replace with your linter command
+
+      - name: Run Linter
+        run: npm run lint # Replace with your linter command
+
+      - name: Run Tests
+        run: npm test # Replace with your testing command
+  
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build # Adjust this to your build output folder
