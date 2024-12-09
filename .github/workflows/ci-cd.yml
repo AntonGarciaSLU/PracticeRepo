@@ -17,9 +17,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up the environment (install GCC)
-      - name: Install GCC
-        run: sudo apt-get install -y gcc
+      # Step 2: Set up the environment (install dependencies)
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc cppcheck
 
       # Step 3: Compile the project
       - name: Build the project
@@ -31,24 +33,6 @@ jobs:
       - name: Run tests
         run: ./main
 
-      # Step 5: Perform static code analysis
+      # Step 5: Perform static code analysis with cppcheck
       - name: Run cppcheck
-        uses: yoanm/github-action-cppcheck@v2
-        with:
-          args: "--enable=all --inconclusive --quiet src/ include/"
-
-  upload-artifacts:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      # Step 1: Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Step 2: Upload compiled binary as an artifact
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: compiled-binary
-          path: ./main
+        run: cppcheck --enable=all --inconclusive --quiet src/ include/
