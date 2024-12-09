@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/library.h"
+#include "library.h"
+
 
 
 void displayMenu() {
@@ -49,3 +50,4 @@ int main() {
 
     return 0;
 }
+
