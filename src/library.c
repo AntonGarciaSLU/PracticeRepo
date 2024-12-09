@@ -6,10 +6,6 @@
 #define MAX_TITLE_LENGTH 100
 #define MAX_AUTHOR_LENGTH 50
 
-typedef struct {
-    char title[MAX_TITLE_LENGTH];
-    char author[MAX_AUTHOR_LENGTH];
-} Book;
 
 // Helper function to display all books
 static void displayBooks(const char *filename, Book *books, int *count) {
