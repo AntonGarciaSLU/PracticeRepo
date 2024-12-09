@@ -1,4 +1,5 @@
 name: CI/CD Pipeline
+
 on:
   push:
     branches:
@@ -8,33 +9,35 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-      - name: Install Dependencies
-        run: npm install # Adjust for your project, e.g., `pip install -r requirements.txt`
-      - name: Build Application
-        run: npm run build # Replace with your build command
+    # Step 1: Checkout the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Run Linter
-        run: npm run lint # Replace with your linter command
+    # Step 2: Set up GCC for compilation
+    - name: Install GCC
+      run: sudo apt-get update && sudo apt-get install -y gcc
 
-      - name: Run Linter
-        run: npm run lint # Replace with your linter command
+    # Step 3: Build the project
+    - name: Build the Project
+      run: |
+        make clean
+        make all
 
-      - name: Run Tests
-        run: npm test # Replace with your testing command
-  
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build # Adjust this to your build output folder
+    # Step 4: Run the tests
+    - name: Run Tests
+      run: ./bin/test_main
+
+    # Step 5: (Optional) Static Code Analysis
+    - name: Run Cppcheck
+      run: cppcheck --enable=all --inconclusive --std=c99 --quiet src/
+
+    # Step 6: Upload Binaries (Optional)
+    - name: Upload Binaries
+      uses: actions/upload-artifact@v3
+      with:
+        name: binaries
+        path: bin/
