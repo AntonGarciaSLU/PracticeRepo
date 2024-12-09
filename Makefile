@@ -1,40 +1,26 @@
-# Compiler and flags
+# Variables
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=c99
-
-# Directories
-SRC_DIR = src
-OBJ_DIR = obj
-BIN_DIR = bin
-TEST_DIR = tests
-
-# Source and object files
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
-OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
-TEST_FILES = $(wildcard $(TEST_DIR)/*.c)
-
-# Binaries
-MAIN_BINARY = $(BIN_DIR)/main
-TEST_BINARY = $(BIN_DIR)/test_main
+CFLAGS = -Wall -Wextra -g
+INCLUDE = -Iinclude
+SRC = src/library.c src/main.c
+OBJ = $(SRC:.c=.o)
+TEST_SRC = test/test_main.c
+TEST_OBJ = $(TEST_SRC:.c=.o)
 
 # Targets
-all: $(MAIN_BINARY) $(TEST_BINARY)
+all: library
 
-# Build main binary
-$(MAIN_BINARY): $(OBJ_FILES)
-	mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) $^ -o $@
+library: $(OBJ)
+	$(CC) $(CFLAGS) -o library $(OBJ)
 
-# Build test binary with -lcunit
-$(TEST_BINARY): $(OBJ_FILES) $(TEST_FILES)
-	mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) $^ -o $@ -lcunit
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 
-# Compile source files into object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+test: library $(TEST_OBJ)
+	$(CC) $(CFLAGS) -o test_runner $(TEST_OBJ) $(OBJ)
+	./test_runner
 
-# Clean up build directories
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -f $(OBJ) $(TEST_OBJ) library test_runner
+
+.PHONY: all test clean

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "library.h"
+#include "../include/library.h"
+
 
 int main() {
     int choice;
@@ -19,42 +20,39 @@ int main() {
         printf("9. Exit\n");
         printf("----------------------------------------\n");
         printf("Enter your choice: ");
-        if (scanf("%d", &choice) != 1 || choice < 1 || choice > 9) {
-            printf("Invalid input. Please enter a number between 1 and 9.\n");
-            while (getchar() != '\n');
-            continue;
-        }
-
+        scanf("%d", &choice); 
+        
         switch (choice) {
             case 1:
-                borrowBook();
+                borrowBook(1); 
             break;
             case 2:
-                returnBook();
+                return_Book(); 
             break;
             case 3:
-                donateBook();
+                donateBook("Hello"); 
             break;
             case 4:
-                searchBook();
+            
             break;
             case 5:
                 listBooks();
+                giveDetails(); 
             break;
             case 6:
                 updateBookDetails();
             break;
             case 7:
-                setDueDate();
+                setDueDateForBook(); 
             break;
-            case 8:
+            cse 8: 
                 removeBook();
             break;
             case 9:
                 printf("Exiting program.\n");
             exit(0);
             default:
-                printf("Invalid choice, please try again.\n");
+                printf("Goodbye!.\n"); 
         }
     }
 

@@ -9,35 +9,46 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the repository
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Step 2: Set up GCC for compilation
-    - name: Install GCC
-      run: sudo apt-get update && sudo apt-get install -y gcc
+      # Step 2: Set up the environment (install GCC)
+      - name: Install GCC
+        run: sudo apt-get install -y gcc
 
-    # Step 3: Build the project
-    - name: Build the Project
-      run: |
-        make clean
-        make all
+      # Step 3: Compile the project
+      - name: Build the project
+        run: |
+          gcc -o main src/main.c src/library.c test/test_main.c
+          ls -la  # List files to verify the build
 
-    # Step 4: Run the tests
-    - name: Run Tests
-      run: ./bin/test_main
+      # Step 4: Run tests
+      - name: Run tests
+        run: ./main
 
-    # Step 5: (Optional) Static Code Analysis
-    - name: Run Cppcheck
-      run: cppcheck --enable=all --inconclusive --std=c99 --quiet src/
+      # Step 5: Perform static code analysis
+      - name: Run cppcheck
+        uses: yoanm/github-action-cppcheck@v2
+        with:
+          args: "--enable=all --inconclusive --quiet src/ include/"
 
-    # Step 6: Upload Binaries (Optional)
-    - name: Upload Binaries
-      uses: actions/upload-artifact@v3
-      with:
-        name: binaries
-        path: bin/
+  upload-artifacts:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Upload compiled binary as an artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-binary
+          path: ./main
