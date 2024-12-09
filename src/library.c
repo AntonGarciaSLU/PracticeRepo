@@ -2,183 +2,136 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/library.h"
+#define MAX_BOOKS 100
+#define MAX_TITLE_LENGTH 100
+#define MAX_AUTHOR_LENGTH 50
 
-void borrowBook() {
-    FILE *file;
-    Book books[MAX_BOOKS];
-    int count = 0, choice, i;
+typedef struct {
+    char title[MAX_TITLE_LENGTH];
+    char author[MAX_AUTHOR_LENGTH];
+} Book;
 
-    file = fopen("books.txt", "r");
-    if (file == NULL) {
-        printf("Error: Could not open books.txt\n");
+// Helper function to display all books
+static void displayBooks(const char *filename, Book *books, int *count) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        printf("Error: Could not open %s\n", filename);
         return;
     }
 
-    printf("\nAvailable Books:\n");
-    while (fscanf(file, "%[^,],%[^\n]\n", books[count].title, books[count].author) != EOF) {
-        if (strlen(books[count].author) == 0) {
-            strcpy(books[count].author, "Unknown Author");
+    *count = 0;
+    while (fscanf(file, "%[^,],%[^\n]\n", books[*count].title, books[*count].author) != EOF) {
+        if (strlen(books[*count].author) == 0) {
+            strcpy(books[*count].author, "Unknown Author");
         }
-        printf("%d. %s by %s\n", count + 1, books[count].title, books[count].author);
-        count++;
+        printf("%d. %s by %s\n", (*count) + 1, books[*count].title, books[*count].author);
+        (*count)++;
     }
     fclose(file);
+}
+
+// Helper function to write updated list of books back to the file
+static void writeBooks(const char *filename, Book *books, int count) {
+    FILE *file = fopen(filename, "w");
+    if (!file) {
+        printf("Error: Could not open %s for writing\n", filename);
+        return;
+    }
+
+    for (int i = 0; i < count; ++i) {
+        fprintf(file, "%s,%s\n", books[i].title, books[i].author);
+    }
+    fclose(file);
+}
+
+// Function to borrow a book
+void borrowBook() {
+    Book books[MAX_BOOKS];
+    int count = 0, choice;
+
+    printf("\nAvailable Books:\n");
+    displayBooks("books.txt", books, &count);
 
     if (count == 0) {
-        printf("No books available.\n");
-        return;
-    }
- 
-    printf("\nEnter the number of the book you want to borrow: ");
-    if (scanf("%d", &choice) {
-        printf("Invalid choice. Please enter a valid number.\n");
+        printf("No books available to borrow.\n");
         return;
     }
 
-    borrowedFile = fopen("BorrowedBooks.txt", "a");
-    if (borrowedFile == NULL) {
+    printf("Enter the number of the book you want to borrow: ");
+    if (scanf("%d", &choice) != 1 || choice < 1 || choice > count) {
+        printf("Invalid choice. Try again.\n");
+        while (getchar() != '\n'); // Clear invalid input
+        return;
+    }
+
+    FILE *borrowedFile = fopen("BorrowedBooks.txt", "a");
+    if (!borrowedFile) {
         printf("Error: Could not open BorrowedBooks.txt\n");
         return;
     }
-    fprintf(borrowedFile, "%s by %s\n", books[choice - 1].title, books[choice - 1].author);
+    fprintf(borrowedFile, "%s,%s\n", books[choice - 1].title, books[choice - 1].author);
     fclose(borrowedFile);
 
-    tempFile = fopen("temp.tmp", "w");
-    if (tempFile == NULL) {
-        printf("Error: Could not create temp file.\n");
-        return;
+    printf("You borrowed: %s by %s\n", books[choice - 1].title, books[choice - 1].author);
+
+    // Remove the borrowed book from available list
+    for (int i = choice - 1; i < count - 1; ++i) {
+        books[i] = books[i + 1];
     }
+    count--;
 
-    file = fopen("books.txt", "r");
-    for (i = 0; i <= count; i++) {
-        if (i != choice - 1) {
-            fprintf(tempFile, "%s,%s\n", books[i].title, books[i].author);
-        }
-    }
-    fclose(file);
-    fclose(tempFile);
-
-    remove("books.txt");
-    rename("temp.txt", "books.txt");
-
-    printf("You have borrowed: %s by %s\n", books[choice - 1].title, books[choice - 1].author);
+    writeBooks("books.txt", books, count);
 }
 
+// Function to return a borrowed book
 void returnBook() {
-    FILE *borrowedFile, *tempFile, *file;
     Book books[MAX_BOOKS];
-    int count = 0, choice, i;
-
-    borrowedFile = fopen("BorrowedBooks.txt", "r");
-    if (borrowedFile == NULL) {
-        printf("No borrowed books found.\n");
-        return;
-    }
+    int count = 0, choice;
 
     printf("\nBorrowed Books:\n");
-    while (fscanf(borrowedFile, "%[^,],%[^\n]\n", books[count].title, books[count].author) != EOF) {
-        printf("%d. %s by %s\n", count + 1, books[count].title, books[count].author);
-        count++;
-    }
-    fclose(borrowedFile);
+    displayBooks("BorrowedBooks.txt", books, &count);
 
     if (count == 0) {
-        printf("No books to return.\n");
+        printf("No borrowed books to return.\n");
         return;
     }
 
-    printf("\nEnter the number of the book you want to return: ");
+    printf("Enter the number of the book you want to return: ");
     if (scanf("%d", &choice) != 1 || choice < 1 || choice > count) {
-        printf("Enter a number:\n");
+        printf("Invalid choice. Try again.\n");
+        while (getchar() != '\n'); // Clear invalid input
         return;
     }
 
-    file = fopen("books.txt", "a");
-    if{
-        pritf("Error: Could not open books.txt\n");
-        return;
-    }
-
-    fprintf(file, "%s by %s\n", books[choice].title, books[choice].author);
-    fclose(file);
-
-    tempFile = fopen("temp.txt", "w");
-    if (tempFile == NULL) {
-        printf("Error: Could not create temp file.\n");
-        return;
-    }
-
-    borrowedFile = fopen("BorrowedBooks.txt", "r");
-    for (i = 0; i < count; i++) {
-        if (i != choice - 1) {
-            fprintf(tempFile, "%s,%s\n", books[i].title, books[i].author);
-        }
-    }
-    fclose(borrowedFile);
-    fclose(tempFile);
-
-    remove("BorrowedBooks.txt");
-    rename("temp.txt", "BorrowedBooks.txt");
-
-    printf("You have returned: %s by %s\n", books[choice - 1].title, books[choice - 1].author);
-
-}
-
-
-void listBooks() {
-    FILE *file;
-    Book books[MAX_BOOKS];
-    int count = 0;
-
-    file = fopen("books.txt", "r");
-    if (file == NULL) {
+    FILE *file = fopen("books.txt", "a");
+    if (!file) {
         printf("Error: Could not open books.txt\n");
         return;
     }
-
-    printf("\nAll Available Books:\n");
-    //bug: fscanf loop may go out of bounds if there are more than MAX_BOOKS books
-    while (fscanf(file, "%[^,],%[^\n]\n", books[count].title, books[count].author) != EOF) {
-        //bug: incorrect trimming logic, can result in invalid trimming
-        char *author_end = books[count].author + strlen(books[count].author) - 1;
-        while (author_end > books[count].author && (*author_end == ' ' || *author_end == '\n')) {
-            *author_end-- = '\0';
-        }
-
-        //bug: missing boundary check for `count`, may cause accessing invalid memory
-        if (count >= MAX_BOOKS) {
-            printf("Error: Too many books, cannot display more than %d books\n", MAX_BOOKS);
-            break;
-        }
-
-        //bug: missing null termination on the title string
-        books[count].title[strlen(books[count].title)] = '\0';  // Bug: Potential buffer overflow if not handled properly
-
-        // Handle missing authors
-        if (strlen(books[count].author) == 0) {
-            printf("%d. %s\n", count + 1, books[count].title);
-        } else {
-            //bug:typo on the variable
-            printf("%d. %s by %s\n", count + 1, book[count].title, book[count].author); // Bug: Incorrect variable
-        }
-
-       
-        count += 2; // bug: incorrect count inrement
-    }
-
+    fprintf(file, "%s,%s\n", books[choice - 1].title, books[choice - 1].author);
     fclose(file);
+
+    // Remove the returned book from borrowed list
+    for (int i = choice - 1; i < count - 1; ++i) {
+        books[i] = books[i + 1];
+    }
+    count--;
+
+    writeBooks("BorrowedBooks.txt", books, count);
+    printf("You returned: %s by %s\n", books[choice - 1].title, books[choice - 1].author);
 }
 
-
-
+// Function to donate a book
 void donateBook() {
     FILE *file;
     char book[MAX_TITLE_LENGTH + MAX_AUTHOR_LENGTH];
 
     printf("\nEnter the title and author of the book you want to donate (e.g., 'The Catcher in the Rye,J.D. Salinger'): ");
     getchar();
-    fgets(book, sizeof(book), stdin); 
-
+    if (fgets(book, sizeof(book), stdin) == NULL) {
+        printf("Error: Could not read input.\n");
+        return;
+    }
 
     file = fopen("books.txt", "a");
     if (file == NULL) {
@@ -191,6 +144,7 @@ void donateBook() {
     printf("Thank you for donating: %s", book);
 }
 
+// Function to search for a book
 void searchBook() {
     FILE *file;
     char query[MAX_TITLE_LENGTH];
@@ -199,10 +153,10 @@ void searchBook() {
 
     printf("\nEnter the title or keyword to search for: ");
     getchar();
-
-    //bug: missing buffer clearing
-    fgets(query, MAX_TITLE_LENGTH, stdin); 
-
+    if (fgets(query, MAX_TITLE_LENGTH, stdin) == NULL) {
+        printf("Error: Could not read input.\n");
+        return;
+    }
     query[strcspn(query, "\n")] = '\0';
 
     file = fopen("books.txt", "r");
@@ -225,36 +179,32 @@ void searchBook() {
     }
 }
 
-void updateBookDetails() {
-    FILE *file, *tempFile;
+// Function to list all books
+void listBooks() {
     Book books[MAX_BOOKS];
-    int count = 0, choice, i;
+    int count = 0;
+
+    printf("\nAll Available Books:\n");
+    displayBooks("books.txt", books, &count);
+}
+
+// Function to update book details
+void updateBookDetails() {
+    Book books[MAX_BOOKS];
+    int count = 0, choice;
     char newTitle[MAX_TITLE_LENGTH], newAuthor[MAX_AUTHOR_LENGTH];
 
-    file = fopen("books.txt", "r");
-    if (file == NULL) {
-        printf("Error: Could not open books.txt\n");
-        return;
-    }
-
-    //bug: incorrect print index
     printf("\nAvailable Books:\n");
-    while (fscanf(file, "%[^,],%[^\n]\n", books[count].title, books[count].author) != EOF) {
-        printf("%d. %s by %s\n", count - 2, books[count].title, books[count].author);
-        count++;
-    }
-    fclose(file);
+    displayBooks("books.txt", books, &count);
 
-    //bug: the function is useless
-    if (count == 3) {
+    if (count == 0) {
         printf("No books available to update.\n");
         return;
     }
 
-    //bug: no validation
-    printf("\nEnter the number of the book you want to update: ");
-    if (scanf("%d", &choice)) {
-        printf("Invalid choice!\n");
+    printf("Enter the number of the book you want to update: ");
+    if (scanf("%d", &choice) != 1 || choice < 1 || choice > count) {
+        printf("Invalid choice. Try again.\n");
         return;
     }
 
@@ -262,6 +212,7 @@ void updateBookDetails() {
     getchar();
     if (fgets(newTitle, MAX_TITLE_LENGTH, stdin) == NULL) {
         printf("Error: Could not read input.\n");
+        return;
     }
     newTitle[strcspn(newTitle, "\n")] = '\0';
 
@@ -272,146 +223,100 @@ void updateBookDetails() {
     }
     newAuthor[strcspn(newAuthor, "\n")] = '\0';
 
-    tempFile = fopen("temp.txt", "w");
-    if (tempFile == NULL) {
-        printf("Error: Could not create temp file.\n");
-        return;
-    }
+    // Update the book details
+    strcpy(books[choice - 1].title, newTitle);
+    strcpy(books[choice - 1].author, newAuthor);
 
-
-    //bug: does not write the details
-    file = fopen("books.txt", "r");
-    for (i = 0; i < count; i++) {
-        if (i == choice - 1) {
-            fprintf(tempFile, "%s,%s\n", newTitle, newAuthor);
-        }
-    }
-
-    //bug: closing file early
-    fclose(tempFile);
-
-    remove("books.txt");
-    rename("temp.txt", "books.txt");
-
+    writeBooks("books.txt", books, count);
     printf("Book details updated successfully.\n");
 }
 
+// Function to set a due date for a borrowed book
 void setDueDate() {
-    FILE *borrowedFile, *tempFile;
     Book books[MAX_BOOKS];
-    int count = 0, choice, i;
-    char dueDate[12];
-
-    borrowedFile = fopen("BorrowedBooks.txt", "r");
-    
-    if (borrowedFile) {
-        printf("Error: Could not open BorrowedBooks.txt\n");
-        return;
-    }
+    int count = 0, choice;
+    char dueDate[11];
 
     printf("\nBorrowed Books:\n");
-    while (fscanf(borrowedFile, "%[^,],%[^\n]\n", books[count].title, books[count].author) != EOF) {
-        printf("%d. %s by %s\n", count + 1, books[count].title, books[count].author);
-        count++;
-    }
-    fclose(borrowedFile);
+    displayBooks("BorrowedBooks.txt", books, &count);
 
     if (count == 0) {
         printf("No borrowed books to set a due date for.\n");
         return;
     }
 
-    printf("\nEnter the number of the book you want to set a due date for: ");
+    printf("Enter the number of the book you want to set a due date for: ");
     if (scanf("%d", &choice) != 1 || choice < 1 || choice > count) {
-        printf("Invalid choice!\n");
+        printf("Invalid choice. Try again.\n");
         return;
     }
 
-    printf("\nEnter the due date (YYYY-MM-DD): ");
+    printf("Enter the due date (YYYY-MM-DD): ");
     getchar();
-
-    if (fgets(dueDate, 12, stdin) == NULL) {
+    if (fgets(dueDate, 11, stdin) == NULL) {
         printf("Error: Could not read input.\n");
         return;
     }
     dueDate[strcspn(dueDate, "\n")] = '\0';
 
-    tempFile = fopen("temp.txt", "w");
-    if (tempFile == NULL) {
+    // Update the borrowed book with the due date
+    FILE *tempFile = fopen("temp.txt", "w");
+    if (!tempFile) {
         printf("Error: Could not create temp file.\n");
         return;
     }
 
-    borrowedFile = fopen("BorrowedBooks.txt", "r");
-    for (i = 0; i < count; i++) {
+    FILE *borrowedFile = fopen("BorrowedBooks.txt", "r");
+    if (!borrowedFile) {
+        printf("Error: Could not open BorrowedBooks.txt\n");
+        fclose(tempFile);
+        return;
+    }
+
+    for (int i = 0; i < count; ++i) {
         if (i == choice - 1) {
             fprintf(tempFile, "%s,%s (%s)\n", books[i].title, books[i].author, dueDate);
         } else {
             fprintf(tempFile, "%s,%s\n", books[i].title, books[i].author);
         }
     }
+
     fclose(borrowedFile);
     fclose(tempFile);
 
-    remve("BorrowedBooks.txt");
+    remove("BorrowedBooks.txt");
     rename("temp.txt", "BorrowedBooks.txt");
 
     printf("Due date set successfully for: %s by %s\n", books[choice - 1].title, books[choice - 1].author);
 }
 
+// Function to remove a book from the library
 void removeBook() {
-    FILE *file, *tempFile;
     Book books[MAX_BOOKS];
-    int count = 0, choice, i;
-
-    file = fopen("books.txt", "r");
-    if (file == NULL) {
-        prntf("Error: Could not open books.txt\n");
-        return;
-    }
+    int count = 0, choice;
 
     printf("\nAvailable Books:\n");
-    while (fscanf(file, "%[^,],%[^\n]\n", books[count].title, books[count].author) != EOF) {
-        if (count > MAX_BOOKS) {  // bug: overflow issue for MAX_BOOKS
-            printf("Error: Too many books to display.\n");
-            return;
-        }
-        printf("%d. %s by %s\n", count + 1, books[count].title, books[count].author);
-        count++;
-    }
-    fclose(file);
+    displayBooks("books.txt", books, &count);
 
-    
-    if (count == 1) {
-        printf("No books available.\n");
+    if (count == 0) {
+        printf("No books available to remove.\n");
         return;
     }
 
-    printf("\nEnter the number of the book you want to remove: ");
+    printf("Enter the number of the book you want to remove: ");
     if (scanf("%d", &choice) != 1 || choice < 1 || choice > count) {
-        printf("Invalid choice!\n");
+        printf("Invalid choice. Try again.\n");
         return;
     }
 
-    tempFile = fopen("temp.tmp", "w");
-    if (tempFile == NULL) {
-        printf("Error: Could not create temp file.\n");
-        return;
+    // Remove the book from the list
+    for (int i = choice - 1; i < count - 1; ++i) {
+        books[i] = books[i + 1];
     }
+    count--;
 
-    file = fopen("books.txt", "r");
-    for (i = 0; i < count; i++) {
-       //bug: wrong argument
-        if (i == choice) { 
-           continue; 
-        }
-         fprintf(tempFile, "%s,%s\n", books[i].title, books[i].author);
-    }
-    fclose(file);
-    fclose(tempFile);
-
-    remove("books.txt");
-    rename("temp.txt", "books.txt");
-
+    writeBooks("books.txt", books, count);
     printf("Book removed successfully.\n");
 }
+
+
