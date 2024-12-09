@@ -37,7 +37,8 @@ jobs:
 
       # Step 5: Run the test program
       - name: Run tests
-        run: ./test_main
+        run: ./test_main --automated
+
 
       # Step 6: Perform static code analysis with cppcheck
       - name: Run cppcheck

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../include/library.h"
 
 // Function to display a test menu for direct testing
@@ -18,9 +19,49 @@ void displayTestMenu() {
     printf("----------------------------------------\n");
 }
 
-int main() {
-    int choice;
+// Function to run automated tests
+void runAutomatedTests() {
+    printf("\nRunning automated tests:\n");
+    printf("----------------------------------------\n");
+    
+    printf("1. Testing Borrow Book...\n");
+    borrowBook();
 
+    printf("2. Testing Return Book...\n");
+    returnBook();
+
+    printf("3. Testing Donate Book...\n");
+    donateBook();
+
+    printf("4. Testing Search Book...\n");
+    searchBook();
+
+    printf("5. Testing List Books...\n");
+    listBooks();
+
+    printf("6. Testing Update Book Details...\n");
+    updateBookDetails();
+
+    printf("7. Testing Set Due Date...\n");
+    setDueDate();
+
+    printf("8. Testing Remove Book...\n");
+    removeBook();
+
+    printf("----------------------------------------\n");
+    printf("All tests completed.\n");
+}
+
+int main(int argc, char *argv[]) {
+    // Check for command-line arguments
+    if (argc > 1 && strcmp(argv[1], "--automated") == 0) {
+        // Automated testing mode
+        runAutomatedTests();
+        return 0;
+    }
+
+    // Interactive mode
+    int choice;
     do {
         displayTestMenu();
         printf("Enter your choice: ");
@@ -65,7 +106,7 @@ int main() {
                 break;
             case 9:
                 printf("\nExiting Test Program.\n");
-                exit(0);
+                break;
             default:
                 printf("Invalid choice. Please try again.\n");
         }
